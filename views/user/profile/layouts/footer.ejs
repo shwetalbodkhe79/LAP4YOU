@@ -1,0 +1,153 @@
+</section>
+
+ <footer class="bg-theme" style="background: #f3f2f2; height: 20%;">
+      <div
+        class="container links pt-4 pb-2 row mx-auto line-break d-flex justify-content-around footer-links"
+      >
+        <a class="col-lg-2 pb-2 text-center text-black" href="#"
+          >Track Shipping</a
+        >
+        <a class="col-lg-2 pb-2 text-center text-black" href="#">Contact Us</a>
+        <a class="col-lg-2 pb-2 text-center text-black" href="#"
+          >Customer Care</a
+        >
+        <a class="col-lg-2 pb-2 text-center text-black" href="#">About us</a>
+        <span class="col-lg-2 justify-content-center d-flex align-items-center">
+          <i class="fab fa-instagram text-black"></i>
+          <i class="fab fa-facebook-f text-black"></i>
+          <i class="fab fa-twitter text-black"></i>
+          <i class="fab fa-whatsapp text-black"></i>
+        </span>
+      </div>
+      <div
+        class="copyright bg-theme py-1 text-center"
+        style="font-size: 0.85rem ; background: #f1efef;" 
+      >
+        <span style="color: black"
+          >Copyright © 2025 | LAP4YOU | Made by
+          <a
+            href=""
+            style="color: gray"
+            >Shwetal B
+          </a></span
+        >
+      </div>
+    </footer>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script>
+  // Prevents current url got saved in the browsers history stack
+  if ( window.history.replaceState ) {
+ window.history.replaceState( null, null, window.location.href );
+  }
+</script>
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+  crossorigin="anonymous"
+></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="/public/js/admin/admin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Image Cropping -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- Cropper js cdn -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" integrity="sha512-6lplKUSl86rUVprDIjiW8DuOniNX8UDoRATqZSds/7t6zCQZfaCe3e5zcGaQwxa8Kpn5RTM9Fvl3X2lLV4grPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="/public/js/user/order.js"></script>
+
+<!-- Image cropping -->
+<script>
+    var bs_modal = $('#modal');
+    var image = document.getElementById('image');
+    var cropper, reader, file;
+    var formData = new FormData();
+
+    $("body").on("change", ".image", function(e) {
+      var files = e.target.files;
+      var done = function(url) {
+        image.src = url;
+        bs_modal.modal('show');
+      };
+
+      if (files && files.length > 0) {
+        file = files[0];
+
+        if (URL) {
+          done(URL.createObjectURL(file));
+        } else if (FileReader) {
+          reader = new FileReader();
+          reader.onload = function(e) {
+            done(reader.result);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    });
+
+    bs_modal.on('shown.bs.modal', function() {
+      cropper = new Cropper(image, {
+        aspectRatio: 1,
+        viewMode: 3,
+        preview: '.preview'
+      });
+    }).on('hidden.bs.modal', function() {
+      cropper.destroy();
+      cropper = null;
+    });
+
+    $("#crop").click(function() {
+      canvas = cropper.getCroppedCanvas({
+        width: 160,
+        height: 160,
+      });
+
+      canvas.toBlob(function(blob) {
+        var file = new File([blob], 'croppedImage.png', { type: 'image/png' });
+
+        formData.append('croppedImage', file);
+        formData.append('name', $("#form-holder").val());
+
+        bs_modal.modal('hide');
+
+        var previewImage = $(".preview-img");
+        $(".preview-img").removeClass('hide');
+        previewImage.attr("src", URL.createObjectURL(file));
+      });
+    });
+
+    $(".btn-submit").click(function(event) {
+      event.preventDefault();
+      Swal.fire({
+        title: `<h5 style="color: white">Are you sure to update the details?</h5>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        confirmButtonColor: '#4CAF50',
+        cancelButtonText: 'No',
+        cancelButtonColor: '#d33',
+        customClass: {
+          popup: 'swal-popup',
+          title: 'swal-title',
+        },
+        background: '#256',
+        confirmButtonClass: 'btn-lg btn-success',
+        cancelButtonClass: 'btn-lg btn-danger',
+      }).then((result) => {
+        if(result.isConfirmed){
+          $.ajax({
+          url: "/users/profile",
+          type: "POST",
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function(data) {
+            window.location.href = '/users/profile'
+          }
+        });
+        }
+      });
+    });
+</script>
+</body>
+</html>

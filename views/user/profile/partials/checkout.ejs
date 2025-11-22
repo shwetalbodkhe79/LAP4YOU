@@ -1,0 +1,241 @@
+<%- include('../layouts/header') %>
+  <%- include('../layouts/user-links') %>
+
+    <div class="container row mx-auto mb-4">
+      <div class="line-break text-center py-3 mb-3">
+        <span class="shadow-heading">Order Summary</span>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="all-products rounded p-3" style="border: 1px solid #dbdbdb">
+          <h6 class="border-bottom pb-2">Products</h6>
+          <% if(products !=null){ %>
+            <% products.forEach((product,i)=> { %>
+              <div class="product-details d-flex justify-content-between pb-1 px-5"
+                style="border-bottom: 1px solid #dbdbdb">
+                <span>
+                  <%= i+1 %>.
+                </span>
+                <span class="flex-grow-1 mx-3">
+                  <%= product.name.name %>
+                </span>
+                <span><span style="text-transform: none;">x</span>
+                  <%= product.quantity %>
+                </span>
+                <span class="mx-5">₹ <%= product.price %></span>
+              </div>
+              <% }) %>
+                <% } %>
+        </div>
+
+        <!-- ✅ Form starts here -->
+        <form action="/users/cart/checkout" method="post" id="checkout-form">
+          <!-- Address Section -->
+          <div class="addresses rounded p-3 my-3" style="border: 1px solid #dbdbdb">
+            <h6 class="border-bottom pb-2">Shipping address</h6>
+            <% if(defaultAddress !=0){ %>
+              <span style="text-transform: none;">
+                <%= defaultAddress.building %><br>
+                  <%= defaultAddress.address %> - <%= defaultAddress.pincode %><br>
+                      <%= defaultAddress.country %><br>
+              </span>
+              <div class="d-flex justify-content-between mt-2">
+                <span style="font-size: 0.85rem;text-transform: none;">
+                  Contact No: <%= defaultAddress.contactNumber %>
+                </span>
+                <button type="button" class="btn btn-sm btn-dark text-white" data-bs-toggle="modal"
+                  data-bs-target="#staticBackdrop" style="font-size: 0.7rem; letter-spacing: 2px;">
+                  Change Address
+                </button>
+              </div>
+
+              <input type="hidden" name="addressID" value="<%= defaultAddress._id %>">
+              <% } else { %>
+                <h6 class="text-danger mt-3" style="text-transform: none;">You have not added any addresses.</h6>
+                <a class="my-2 btn btn-sm btn-dark text-white" href="/users/addresses"
+                  style="font-size: 0.7rem; letter-spacing: 2px;">
+                  Add an Address
+                </a>
+                <% } %>
+          </div>
+
+          <!-- Payment Options -->
+          <div class="addresses rounded p-3 my-3" style="border: 1px solid #dbdbdb">
+            <h6 class="border-bottom pb-2">Mode of Payment</h6>
+
+            <!-- Razorpay -->
+            <div class="form-check d-flex align-items-center" style="font-size: 0.85rem;">
+              <input class="form-check-input" type="radio" name="paymentMethod" value="RazorPay" id="razorpayOption"
+                checked>
+              <label class="form-check-label mx-2" for="razorpayOption">
+                <b>
+                  <svg style="color: rgb(63, 194, 238); height:20px" role="img" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <title>Razorpay</title>
+                    <path
+                      d="M22.436 0l-11.91 7.773-1.174 4.276 6.625-4.297L11.65 24h4.391l6.395-24zM14.26 10.098L3.389 17.166 1.564 24h9.008l3.688-13.902Z"
+                      fill="#3fc2ee"></path>
+                  </svg>
+                  RazorPay
+                </b>
+              </label>
+            </div>
+
+            <!-- COD -->
+            <div class="form-check d-flex align-items-center" style="font-size: 0.85rem;">
+              <input class="form-check-input" type="radio" name="paymentMethod" value="COD" id="codOption">
+              <label class="form-check-label mx-2" for="codOption"><b>Cash on delivery</b></label>
+            </div>
+          </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="col-lg-4">
+        <div class="order-summary rounded p-3 my-3 d-flex flex-column"
+          style="border: 1px solid #dbdbdb; font-size: 0.9rem;">
+          <div class="mb-2">
+            <input type="text" class="form-control" id="couponCode" placeholder="Coupon Code" name="couponCode" />
+            <button type="button" class="btn btn-danger w-100 mt-3 btn-sm" onclick="checkCoupon()">Apply Coupon</button>
+          </div>
+          <span id="couponMessage" class="bg-light px-2 rounded m-2"></span>
+        </div>
+
+        <div class="order-summary rounded p-3 my-3 d-flex flex-column"
+          style="border: 1px solid #dbdbdb; font-size: 0.9rem;">
+          <div class="d-flex justify-content-between border-bottom p-1">
+            <span>Price:</span>
+            <span>₹ <%= userCart.totalPrice %></span>
+          </div>
+          <div class="d-flex justify-content-between border-bottom p-1">
+            <span>Discount Price:</span>
+            <div>₹<span id="couponDiscount">0</span></div>
+          </div>
+          <input type="hidden" name="couponDiscount" value="" id="inputCouponDiscount">
+
+          <div class="d-flex justify-content-between fw-bold p-1">
+            <span>Final Price:</span>
+            <div>₹<span id="finalPrice">
+                <%= userCart.totalPrice %>
+              </span></div>
+          </div>
+          <input type="hidden" name="finalPrice" value="<%= userCart.totalPrice %>" id="inputFinalPrice">
+        </div>
+
+        <!-- Place Order -->
+        <!-- Place Order -->
+        <div class="order-summary rounded p-3 my-3 d-flex flex-column"
+          style="border: 1px solid #dbdbdb; font-size: 0.9rem;">
+          <button type="button" style="background-color: rgb(235, 94, 6); border: none;"
+            onclick="startRazorpayPayment(document.getElementById('inputFinalPrice').value)"
+            class="text-white btn btn-dark btn-sm" <% if(defaultAddress==0){ %>disabled style="background-color: grey;"
+            <% } %>>
+              Place Order
+          </button>
+        </div>
+
+        </form> <!-- ✅ form ends properly here -->
+      </div>
+    </div>
+
+    <!-- Address Modal -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+      aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="staticBackdropLabel">Change default Address</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <% if(allAddresses !=null){ %>
+              <form action="/users/cart/checkout/changeDefaultAddress" method="post">
+                <% allAddresses.forEach((address,i)=> { %>
+                  <div class="form-check d-flex align-items-center rounded mb-2" style="border: 1px solid #dbdbdb;">
+                    <input class="form-check-input mx-2" type="radio" name="DefaultAddress" id="radio<%= i+1 %>"
+                      value="<%= address._id %>">
+                    <label class="form-check-label m-2" for="radio<%= i+1 %>">
+                      <span style="text-transform: none;">
+                        <%= address.building %><br>
+                          <%= address.address %> - <%= address.pincode %><br>
+                              <%= address.country %><br>
+                      </span>
+                      <span style="font-size: 0.85rem;text-transform: none;">
+                        Contact No: <%= address.contactNumber %>
+                      </span>
+                    </label>
+                  </div>
+                  <% }) %>
+          </div>
+          <div class="modal-footer d-flex justify-content-between">
+            <a href="/users/addresses" class="btn btn-sm btn-dark text-white"
+              style="font-size: 0.85rem;text-transform: none; letter-spacing: 0px;">Add new address</a>
+            <div>
+              <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-sm btn-dark text-white">Set as default</button>
+            </div>
+            </form>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Razorpay Script -->
+    <!-- <script src="https://checkout.razorpay.com/v1/checkout.js"></script> -->
+    <!-- <script src="/public/js/user/checkout.js"></script> -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+      async function startRazorpayPayment(finalPrice) {
+        try {
+          // Step 1: Create Razorpay order (from your backend)
+          const response = await fetch("/users/cart/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              paymentMethod: "RazorPay",
+              finalPrice: finalPrice,
+              addressID: document.querySelector("input[name='addressID']:checked").value,
+              couponCode: document.getElementById("couponCode")?.value || ""
+            })
+          });
+
+          const data = await response.json();
+          const order = JSON.parse(data.order);
+
+          // Step 2: Initialize Razorpay
+          const options = {
+            key: "<%= process.env.RAZORPAY_KEYID %>", // public key
+            amount: order.amount,
+            currency: order.currency,
+            name: "LAP4YOU",
+            description: "Order Payment",
+            order_id: order.id,
+            handler: async function (response) {
+              // Step 3: Verify payment on backend
+              const verify = await fetch("/users/cart/checkout/verifyPayment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(response)
+              });
+
+              const result = await verify.json();
+              if (result.success) {
+                window.location.href = "/users/cart/checkout/" + order.receipt;
+              } else {
+                alert("Payment verification failed!");
+              }
+            },
+            theme: { color: "#3399cc" }
+          };
+
+          const rzp = new Razorpay(options);
+          rzp.open();
+
+        } catch (err) {
+          console.error("Error starting Razorpay:", err);
+        }
+      }
+    </script>
+
+
+    <%- include('../layouts/footer') %>
