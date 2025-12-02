@@ -1,0 +1,42 @@
+# Node modules - never copy local modules
+node_modules/
+
+# Logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+logs/
+*.log
+
+# Environment variables (VERY IMPORTANT)
+.env
+.env.*
+
+# Build artifacts (frontend or backend output)
+dist/
+build/
+public/build/
+public/dist/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+
+# IDE folders
+.vscode/
+.idea/
+
+# Git folders
+.git/
+.gitignore
+.gitattributes
+
+# Docker files (optional)
+Dockerfile
+docker-compose*
+
+# Temporary files
+*.cache
+.cache/
+tmp/
+temp/

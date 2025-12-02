@@ -4,9 +4,11 @@ const app = express();
 const path = require('path');
 const nocache = require('nocache');
 
+require("dotenv").config();
 
 
 //configuring .env
+
 dotenv.config({path:'config.env'});
 
 
